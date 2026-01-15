@@ -12,9 +12,9 @@ const LoginPage = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const result = login(username, password);
+    const result = await login(username, password);
     if (result.success) {
       navigate('/');
     } else {

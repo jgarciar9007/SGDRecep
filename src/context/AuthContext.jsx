@@ -5,20 +5,28 @@ const AuthContext = createContext(null);
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
 
-    const login = useCallback((username, password) => {
-        // Simulated authentication logic
-        if (username === 'admin' && password === 'admin123') {
-            const userData = { username: 'admin', role: 'Admin', name: 'Administrador Sistema' };
-            setUser(userData);
-            localStorage.setItem('cndes_user', JSON.stringify(userData));
-            return { success: true };
-        } else if (username === 'recep' && password === 'recep123') {
-            const userData = { username: 'recep', role: 'Receptionist', name: 'Recepcionista CNDES' };
-            setUser(userData);
-            localStorage.setItem('cndes_user', JSON.stringify(userData));
-            return { success: true };
+    const login = useCallback(async (username, password) => {
+        try {
+            const response = await fetch('/api/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                const userData = data.user;
+                setUser(userData);
+                localStorage.setItem('cndes_user', JSON.stringify(userData));
+                return { success: true };
+            } else {
+                return { success: false, message: data.message || 'Error de autenticación' };
+            }
+        } catch (error) {
+            console.error("Login error:", error);
+            return { success: false, message: 'Error de conexión' };
         }
-        return { success: false, message: 'Credenciales inválidas' };
     }, []);
 
     const logout = useCallback(() => {

@@ -6,12 +6,22 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
+import helmet from 'helmet';
+import compression from 'compression';
+import morgan from 'morgan';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 const app = express();
-const PORT = 3001;
+const PORT = process.env.PORT || 3001;
+
+// Security & Performance Middleware
+app.use(helmet({
+    contentSecurityPolicy: false, // Disabled for simplicity during dev/prod transition to avoid breaking inline scripts/images
+}));
+app.use(compression());
+app.use(morgan('combined')); // Logging
 
 // Increase limit for Base64 attachments
 app.use(bodyParser.json({ limit: '50mb' }));
@@ -46,9 +56,14 @@ function saveAttachments(attachments) {
             fs.writeFileSync(filePath, buffer);
 
             // Return file object with updated URL pointing to server
+            // Use relative path if serving from same domain, or absolute if needed.
+            // For flexibility, let's keep full URL but if we are on same domain, relative is better.
+            // But client expects full URL usually. We can construct it.
+            // Actually, best to store relative path /uploads/... in DB or formatted.
+            // But here we return what UI expects.
             return {
                 ...file,
-                url: `http://localhost:${PORT}/uploads/${fileName}`,
+                url: `/uploads/${fileName}`, // Relative path is safer for prod if served from same origin
                 savedToDisk: true
             };
         } catch (err) {
@@ -58,7 +73,7 @@ function saveAttachments(attachments) {
     });
 }
 
-// --- ROUTES ---
+// --- API ROUTES ---
 
 // GET All Documents
 app.get('/api/documents', (req, res) => {
@@ -205,6 +220,24 @@ app.post('/api/login', (req, res) => {
         }
     });
 });
+
+// --- CLIENT SERVING ---
+// Serve React Static Files
+// Assumes 'dist' is in the project root found at '../dist' relative to server/
+const distPath = path.join(__dirname, '../dist');
+if (fs.existsSync(distPath)) {
+    app.use(express.static(distPath));
+
+    // Handle React Routing, return all requests to React app
+    app.get('*', (req, res) => {
+        res.sendFile(path.join(distPath, 'index.html'));
+    });
+} else {
+    // Dev fallback text if no build
+    app.get('/', (req, res) => {
+        res.send('API Server Running. Run `npm run build` in root to generate frontend.');
+    });
+}
 
 
 app.listen(PORT, () => {

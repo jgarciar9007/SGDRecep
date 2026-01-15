@@ -50,7 +50,7 @@ export const DocumentProvider = ({ children }) => {
         year: new Date().getFullYear()
     });
 
-    const API_URL = 'http://localhost:3001/api/documents';
+    const API_URL = '/api/documents';
 
     // Load Documents from API
     const fetchDocuments = async () => {
