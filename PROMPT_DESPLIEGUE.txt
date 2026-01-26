@@ -1,0 +1,23 @@
+INSTRUCCIONES PARA SOLICITAR CONFIGURACIÓN DE DESPLIEGUE (PM2 + Script Windows)
+
+Si necesitas configurar este mismo sistema de despliegue automatizado en otro proyecto, puedes copiar y pegarme el siguiente mensaje (Prompt):
+
+------------------------------------------------------------------------------------------------
+"Configura el despliegue automático para producción en Windows usando PM2.
+Por favor, crea en la raíz del proyecto los siguientes archivos:
+
+1. 'ecosystem.config.cjs':
+   - Configuración para PM2.
+   - Debe ejecutar el script de entrada del servidor (ej. './server/index.js').
+   - Nombre de la instancia según el proyecto.
+   - Modo 'production'.
+   - Reinicio automático y límite de memoria.
+
+2. 'publish.bat':
+   - Script de lotes (batch) para Windows.
+   - Debe instalar dependencias ('npm install' en raíz y carpeta del servidor si existe).
+   - Ejecutar la construcción del frontend ('npm run build').
+   - Verificar si PM2 está instalado globalmente; si no, instalarlo.
+   - Ejecutar 'pm2 startOrReload ecosystem.config.cjs' para iniciar o actualizar sin tiempo de inactividad.
+   - Mostrar 'pm2 status' al finalizar y pausar para ver resultados."
+------------------------------------------------------------------------------------------------

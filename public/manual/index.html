@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manual de Usuario - SGDRecep</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px;
+        }
+
+        h1 {
+            color: #003366;
+            border-bottom: 2px solid #003366;
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+
+        h2 {
+            color: #0055a5;
+            margin-top: 30px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 5px;
+        }
+
+        h3 {
+            color: #0077cc;
+            margin-top: 20px;
+        }
+
+        p {
+            margin-bottom: 15px;
+            text-align: justify;
+        }
+
+        ul {
+            margin-bottom: 15px;
+        }
+
+        li {
+            margin-bottom: 5px;
+        }
+
+        img {
+            max-width: 100%;
+            height: auto;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin: 20px 0;
+            display: block;
+        }
+
+        code {
+            background-color: #f4f4f4;
+            padding: 2px 5px;
+            border-radius: 4px;
+            font-family: monospace;
+            color: #d63384;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+        }
+
+        .cover {
+            text-align: center;
+            padding: 50px 0;
+            margin-bottom: 40px;
+            border-bottom: 4px solid #003366;
+        }
+
+        .cover h1 {
+            border: none;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .meta {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        @media print {
+            body {
+                padding: 0;
+                max-width: 100%;
+            }
+
+            .page-break {
+                page-break-before: always;
+            }
+
+            img {
+                max-height: 500px;
+                object-fit: contain;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="cover">
+        <h1>Manual de Usuario</h1>
+        <h2>Sistema de Gestión Documental y Recepción (SGDRecep)</h2>
+        <p><strong>CNDES - Guinea Ecuatorial</strong></p>
+        <div class="meta">
+            <p>Versión: 1.0<br>Fecha: 23 de Enero de 2026</p>
+        </div>
+    </div>
+
+    <p>Bienvenido al Sistema de Gestión Documental y Recepción (SGDRecep). Este manual le guiará a través de todas las
+        funcionalidades del sistema, diseñado para modernizar y optimizar el flujo documental del CNDES.</p>
+
+    <div class="page-break"></div>
+
+    <h2>1. Acceso al Sistema</h2>
+    <p>Para acceder a la plataforma, utilice un navegador web compatible (Chrome, Edge, Firefox).</p>
+
+    <h3>Pantalla de Inicio de Sesión</h3>
+    <ul>
+        <li><strong>URL</strong>: <code>http://localhost:5173/</code> (o la IP del servidor asignado).</li>
+        <li><strong>Credenciales</strong>: Ingrese su usuario y contraseña proporcionados por el administrador.</li>
+        <li><em>Nota</em>: Si introduce credenciales incorrectas, el sistema mostrará un aviso de error.</li>
+    </ul>
+    <img src="login.png" alt="Pantalla de Inicio de Sesión">
+
+    <div class="page-break"></div>
+
+    <h2>2. Panel de Control (Dashboard)</h2>
+    <p>Al ingresar, visualizará el <strong>Dashboard</strong>, centro de mando para monitorear la actividad en tiempo
+        real.</p>
+    <img src="dashboard.png" alt="Panel de Dashboard">
+
+    <h3>Elementos del Dashboard:</h3>
+    <ol>
+        <li><strong>Tarjetas de Estadísticas (KPIs)</strong>:
+            <ul>
+                <li><strong>Total Registros</strong>: Número global de documentos en la base de datos.</li>
+                <li><strong>Entradas (Mes)</strong>: Documentos recibidos desde el exterior en el mes actual.</li>
+                <li><strong>Salidas (Mes)</strong>: Documentos emitidos o despachados en el mes actual.</li>
+                <li><strong>Internos (Mes)</strong>: Memorándums o comunicaciones entre departamentos.</li>
+                <li><strong>Digitalizados</strong>: Porcentaje de registros que cuentan con archivo adjunto
+                    (PDF/Imagen).</li>
+            </ul>
+        </li>
+        <li><strong>Gráficos</strong>:
+            <ul>
+                <li><strong>Flujo Semanal</strong>: Línea de tiempo que muestra la actividad de los últimos 7 días.</li>
+                <li><strong>Comparativa Anual</strong>: Gráfico de barras comparando volúmenes de Entradas, Salidas e
+                    Internos a lo largo del año.</li>
+            </ul>
+        </li>
+    </ol>
+
+    <div class="page-break"></div>
+
+    <h2>3. Gestión Documental: Nuevo Registro</h2>
+    <p>Esta sección permite la digitalización e indexación de documentos físicos o digitales.</p>
+
+    <h3>Flujo de Trabajo:</h3>
+    <ol>
+        <li>Haga clic en <strong>"Nuevo Registro"</strong> en el menú lateral.</li>
+        <li>El formulario se adapta dinámicamente según el <strong>Tipo de Flujo</strong>:
+            <ul>
+                <li><strong>Entrada</strong>: Para documentos que llegan de fuera (Ministerios, Empresas).
+                    <ul>
+                        <li><em>Procedencia</em>: Seleccione el remitente externo.</li>
+                        <li><em>Destino</em>: Seleccione el departamento interno que recepciona.</li>
+                    </ul>
+                </li>
+                <li><strong>Salida</strong>: Para documentos que salen del CNDES.
+                    <ul>
+                        <li><em>Procedencia</em>: Su departamento.</li>
+                        <li><em>Destino</em>: Entidad externa destinataria.</li>
+                    </ul>
+                </li>
+                <li><strong>Interno</strong>: Para memorándums internos.</li>
+            </ul>
+        </li>
+    </ol>
+
+    <h3>Campos Importantes:</h3>
+    <ul>
+        <li><strong>Nº Documento</strong>:
+            <ul>
+                <li>En <em>Entrada</em>: Usted debe escribir la referencia que trae el documento (ej.
+                    <code>OFICIO-2026/001</code>).</li>
+                <li>En <em>Salida/Interno</em>: El sistema genera automáticamente el correlativo (ej.
+                    <code>SAL-2026-0042</code>).</li>
+            </ul>
+        </li>
+        <li><strong>Fecha de Registro</strong>: Por defecto es hoy, pero puede modificarse si se está registrando con
+            retraso.</li>
+        <li><strong>Adjuntar Archivos</strong>:
+            <ul>
+                <li>Puede subir múltiples archivos (PDF, JPG, PNG).</li>
+                <li><em>Opción Móvil</em>: Si accede desde una tablet/móvil, puede usar la cámara directamente para
+                    escanear.</li>
+            </ul>
+        </li>
+    </ul>
+
+    <p>3. Al finalizar, presione <strong>"Guardar Registro"</strong>. Verá una confirmación de éxito.</p>
+    <img src="entry.png" alt="Formulario de Entrada">
+
+    <div class="page-break"></div>
+
+    <h2>4. Consulta y Seguimiento (Log de Documentos)</h2>
+    <p>El <strong>Libro de Registro Digital</strong> le permite buscar y gestionar todo el histórico documental.</p>
+    <img src="log.png" alt="Libro de Registro">
+
+    <h3>Herramientas de Búsqueda:</h3>
+    <ul>
+        <li><strong>Barra Superior</strong>: Escriba cualquier palabra clave (nombre, número, asunto) y la tabla
+            filtrará instantáneamente los resultados.</li>
+        <li><strong>Orden</strong>: Los documentos más recientes aparecen primero.</li>
+    </ul>
+
+    <h3>Acciones sobre Documentos:</h3>
+    <p>En la columna derecha de cada fila, encontrará botones de acción (según sus permisos):</p>
+    <ul>
+        <li>👁️ <strong>Ver Detalle</strong>: Abre una ficha completa con todos los datos y permite descargar los
+            adjuntos.</li>
+        <li>✏️ <strong>Editar</strong>: Permite corregir errores o añadir información (ej. añadir un adjunto faltante).
+        </li>
+        <li>🗑️ <strong>Eliminar</strong>: (Solo Administradores) Borra permanentemente el registro.</li>
+    </ul>
+
+    <h3>Descarga de Archivos:</h3>
+    <p>Desde la vista de detalle "Ojo", si el documento tiene un clip o archivo adjunto, verá un botón
+        <strong>"Descargar"</strong> para guardar el PDF en su ordenador.</p>
+
+    <div class="page-break"></div>
+
+    <h2>5. Administrador: Gestión de Entidades</h2>
+    <p>Si durante un registro no encuentra la "Entidad Externa" o "Departamento", puede crearlo al vuelo:</p>
+    <ol>
+        <li>En el desplegable de Procedencia/Destino, haga clic en el botón pequeño <strong>"+ Nuevo"</strong>.</li>
+        <li>Escriba el nombre de la nueva entidad (ej. "Nueva Empresa S.L.").</li>
+        <li>Confirme para añadirla permanentemente al catálogo del sistema.</li>
+    </ol>
+
+    <div class="page-break"></div>
+
+    <h2>6. Módulo de Agenda</h2>
+    <p>El sistema incluye un módulo integrado para la gestión de la agenda institucional y visualización de eventos
+        concertados.</p>
+    <img src="agenda_month.png" alt="Vista Mensual de Agenda">
+
+    <h3>Funcionalidades Clave:</h3>
+    <ul>
+        <li><strong>Vistas Flexibles</strong>: Permite alternar entre visualización Mensual, Semanal y Diaria para una
+            mejor planificación.</li>
+        <li><strong>Identificación Visual</strong>: Los eventos se muestran con indicadores de hora y título claro.</li>
+        <li><strong>Navegación Rápida</strong>: Use el selector de fechas o las flechas de "Anterior/Siguiente" para
+            moverse entre periodos.</li>
+    </ul>
+
+    <h3>Búsqueda de Eventos:</h3>
+    <p>El buscador global permite localizar rápidamente cualquier reunión por nombre de entidad, sala o asunto.</p>
+    <img src="agenda_search.png" alt="Búsqueda Inteligente en Agenda">
+    <ul>
+        <li>Al escribir (ej. "INEGE"), el sistema despliega una tarjeta flotante con los detalles completos del evento
+            encontrado.</li>
+    </ul>
+
+    <div class="page-break"></div>
+
+    <h2>7. Solución de Problemas Frecuentes</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Problema</th>
+                <th>Causa Probable</th>
+                <th>Solución</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>"Error Network"</strong></td>
+                <td>El servidor backend está apagado.</td>
+                <td>Contacte a TI para verificar que el servicio (puerto 3000) esté corriendo.</td>
+            </tr>
+            <tr>
+                <td><strong>No puedo borrar</strong></td>
+                <td>Falta de permisos.</td>
+                <td>Solo usuarios con rol 'Admin' pueden eliminar. Solicite al supervisor.</td>
+            </tr>
+            <tr>
+                <td><strong>Carga lenta</strong></td>
+                <td>Base de datos grande o red lenta.</td>
+                <td>El sistema optimiza imágenes, pero verifique su conexión WiFi/LAN.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <hr>
+    <p class="meta" style="text-align: center;"><strong>Soporte Técnico</strong>: Para asistencia adicional, contacte al
+        Departamento de Informática del CNDES.</p>
+
+</body>
+
+</html>
