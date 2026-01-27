@@ -7,7 +7,8 @@ import {
   LogOut,
   Settings,
   FileText,
-  User
+  User,
+  Users
 } from 'lucide-react';
 import logo from '../assets/logo.png';
 
@@ -39,6 +40,12 @@ const Layout = ({ children }) => {
           <NavLink to="/log" className={({ isActive }) => currentIndex(isActive)}>
             <FileText size={20} /> Log de Documentos
           </NavLink>
+
+          {user?.role === 'Admin' && (
+            <NavLink to="/users" className={({ isActive }) => currentIndex(isActive)}>
+              <Users size={20} /> Usuarios
+            </NavLink>
+          )}
 
 
         </nav>
@@ -209,6 +216,7 @@ const Layout = ({ children }) => {
     if (path === '/') return 'Resumen General';
     if (path === '/entry') return 'Nuevo Registro de Documento';
     if (path === '/log') return 'Seguimiento de Documentos';
+    if (path === '/users') return 'Gestión de Usuarios';
     return 'Sistema CNDES';
   }
 };

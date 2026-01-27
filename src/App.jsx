@@ -9,6 +9,7 @@ import './index.css';
 import Dashboard from './pages/Dashboard';
 import DocumentLog from './pages/DocumentLog';
 import DocumentEntry from './pages/DocumentEntry';
+import ManageUsers from './pages/ManageUsers';
 
 
 const ProtectedRoute = ({ children }) => {
@@ -32,6 +33,10 @@ const AppContent = () => {
       <Route
         path="/edit/:id"
         element={<ProtectedRoute><Layout><DocumentEntry /></Layout></ProtectedRoute>}
+      />
+      <Route
+        path="/users"
+        element={<ProtectedRoute><Layout><ManageUsers /></Layout></ProtectedRoute>}
       />
       <Route path="*" element={<Navigate to="/" />} />
     </Routes>

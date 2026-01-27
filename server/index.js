@@ -233,6 +233,35 @@ app.post('/api/external-entities', (req, res) => {
     });
 });
 
+// --- USER MANAGEMENT ROUTES ---
+
+// GET All Users
+app.get('/api/users', (req, res) => {
+    db.all("SELECT username, role, name FROM users ORDER BY username ASC", [], (err, rows) => {
+        if (err) return res.status(400).json({ "error": err.message });
+        res.json({ "message": "success", "data": rows });
+    });
+});
+
+// UPDATE User Password
+app.put('/api/users/:username', (req, res) => {
+    const { password } = req.body;
+    db.run(
+        'UPDATE users SET password = ? WHERE username = ?',
+        [password, req.params.username],
+        function (err) {
+            if (err) {
+                res.status(400).json({ "error": err.message });
+                return;
+            }
+            res.json({
+                "message": "success",
+                "changes": this.changes
+            });
+        }
+    );
+});
+
 // LOGIN
 app.post('/api/login', (req, res) => {
     const { username, password } = req.body;
