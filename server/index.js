@@ -265,6 +265,7 @@ app.put('/api/users/:username', (req, res) => {
 // LOGIN
 app.post('/api/login', (req, res) => {
     const { username, password } = req.body;
+    console.log(`Login attempt for: ${username}`);
     const sql = "SELECT * FROM users WHERE username = ? AND password = ?";
     db.get(sql, [username, password], (err, row) => {
         if (err) {
