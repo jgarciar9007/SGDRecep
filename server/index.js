@@ -18,10 +18,10 @@ const PORT = process.env.PORT || 3000;
 
 // Security & Performance Middleware
 app.use(helmet({
-    contentSecurityPolicy: false, // Disabled for simplicity during dev/prod transition to avoid breaking inline scripts/images
+    contentSecurityPolicy: false,
 }));
 app.use(compression());
-app.use(morgan('combined')); // Logging
+app.use(morgan('combined'));
 
 // Increase limit for Base64 attachments
 app.use(bodyParser.json({ limit: '50mb' }));
@@ -35,19 +35,15 @@ function saveAttachments(attachments) {
     if (!attachments || !Array.isArray(attachments)) return [];
 
     return attachments.map(file => {
-        // If it's already a URL (previously saved) or not base64, skip
         if (!file.url || !file.url.startsWith('data:')) {
             return file;
         }
 
         try {
-            // "data:application/pdf;base64,JVBERi0xLj..."
             const matches = file.url.match(/^data:(.+);base64,(.+)$/);
             if (!matches) return file;
 
-            const ext = file.name.split('.').pop();
             const timestamp = Date.now();
-            // Create a safe unique filename: 123456789_clean-file-name.pdf
             const safeName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
             const fileName = `${timestamp}_${safeName}`;
             const filePath = path.join(__dirname, 'uploads', fileName);
@@ -55,20 +51,14 @@ function saveAttachments(attachments) {
 
             fs.writeFileSync(filePath, buffer);
 
-            // Return file object with updated URL pointing to server
-            // Use relative path if serving from same domain, or absolute if needed.
-            // For flexibility, let's keep full URL but if we are on same domain, relative is better.
-            // But client expects full URL usually. We can construct it.
-            // Actually, best to store relative path /uploads/... in DB or formatted.
-            // But here we return what UI expects.
             return {
                 ...file,
-                url: `/uploads/${fileName}`, // Relative path is safer for prod if served from same origin
+                url: `/uploads/${fileName}`,
                 savedToDisk: true
             };
         } catch (err) {
             console.error("Error saving file:", err);
-            return file; // Return original on error to not lose data
+            return file;
         }
     });
 }
@@ -76,15 +66,12 @@ function saveAttachments(attachments) {
 // --- API ROUTES ---
 
 // GET All Documents
-app.get('/api/documents', (req, res) => {
-    const sql = "SELECT * FROM documents ORDER BY createdAt DESC";
-    db.all(sql, [], (err, rows) => {
-        if (err) {
-            res.status(400).json({ "error": err.message });
-            return;
-        }
-        // Parse attachments JSON string back to object
-        const documents = rows.map(doc => ({
+app.get('/api/documents', async (req, res) => {
+    try {
+        // Quoting mixed-case column names is required in certain PG configurations if created that way
+        const result = await db.query('SELECT * FROM documents ORDER BY "createdAt" DESC');
+
+        const documents = result.rows.map(doc => ({
             ...doc,
             attachments: doc.attachments ? JSON.parse(doc.attachments) : []
         }));
@@ -92,11 +79,14 @@ app.get('/api/documents', (req, res) => {
             "message": "success",
             "data": documents
         });
-    });
+    } catch (err) {
+        console.error(err);
+        res.status(400).json({ "error": err.message });
+    }
 });
 
 // POST Create Document
-app.post('/api/documents', (req, res) => {
+app.post('/api/documents', async (req, res) => {
     const {
         id, registrationDate, type, docNumber, docDate,
         origin, destination, summary, observations, status,
@@ -105,15 +95,14 @@ app.post('/api/documents', (req, res) => {
 
     const createdAt = new Date().toISOString();
 
-    // Process attachments to save files to disk
     const processedAttachments = saveAttachments(attachments);
     const attachmentsJson = JSON.stringify(processedAttachments || []);
 
     const sql = `INSERT INTO documents (
-        id, registrationDate, type, docNumber, docDate, 
+        id, "registrationDate", type, "docNumber", "docDate", 
         origin, destination, summary, observations, status, 
-        fileName, attachments, createdAt
-    ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)`;
+        "fileName", attachments, "createdAt"
+    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING id`;
 
     const params = [
         id, registrationDate, type, docNumber, docDate,
@@ -121,44 +110,43 @@ app.post('/api/documents', (req, res) => {
         fileName, attachmentsJson, createdAt
     ];
 
-    db.run(sql, params, function (err) {
-        if (err) {
-            res.status(400).json({ "error": err.message });
-            return;
-        }
+    try {
+        const result = await db.query(sql, params);
         res.json({
             "message": "success",
             "data": { ...req.body, attachments: processedAttachments },
-            "id": this.lastID
+            "id": result.rows[0].id
         });
-    });
+    } catch (err) {
+        console.error(err);
+        res.status(400).json({ "error": err.message });
+    }
 });
 
 // PUT Update Document
-app.put('/api/documents/:id', (req, res) => {
+app.put('/api/documents/:id', async (req, res) => {
     const {
         registrationDate, type, docNumber, docDate,
         origin, destination, summary, observations, status,
         fileName, attachments
     } = req.body;
 
-    // Process attachments to save new files to disk
     const processedAttachments = saveAttachments(attachments);
     const attachmentsJson = JSON.stringify(processedAttachments || []);
 
     const sql = `UPDATE documents SET 
-        registrationDate = ?, 
-        type = ?, 
-        docNumber = ?, 
-        docDate = ?, 
-        origin = ?, 
-        destination = ?, 
-        summary = ?, 
-        observations = ?, 
-        status = ?, 
-        fileName = ?, 
-        attachments = ?
-        WHERE id = ?`;
+        "registrationDate" = $1, 
+        type = $2, 
+        "docNumber" = $3, 
+        "docDate" = $4, 
+        origin = $5, 
+        destination = $6, 
+        summary = $7, 
+        observations = $8, 
+        status = $9, 
+        "fileName" = $10, 
+        attachments = $11
+        WHERE id = $12`;
 
     const params = [
         registrationDate, type, docNumber, docDate,
@@ -166,112 +154,97 @@ app.put('/api/documents/:id', (req, res) => {
         fileName, attachmentsJson, req.params.id
     ];
 
-    db.run(sql, params, function (err) {
-        if (err) {
-            res.status(400).json({ "error": err.message });
-            return;
-        }
+    try {
+        const result = await db.query(sql, params);
         res.json({
             "message": "success",
             "data": { ...req.body, attachments: processedAttachments },
-            "changes": this.changes
+            "changes": result.rowCount
         });
-    });
+    } catch (err) {
+        console.error(err);
+        res.status(400).json({ "error": err.message });
+    }
 });
 
 // DELETE Document
-app.delete('/api/documents/:id', (req, res) => {
-    // Optionally: delete files from disk. 
-    // fetch doc first -> iterate attachments -> fs.unlink
-
-    db.run(
-        'DELETE FROM documents WHERE id = ?',
-        req.params.id,
-        function (err) {
-            if (err) {
-                res.status(400).json({ "error": res.message });
-                return;
-            }
-            res.json({ "message": "deleted", changes: this.changes });
-        }
-    );
+app.delete('/api/documents/:id', async (req, res) => {
+    try {
+        const result = await db.query('DELETE FROM documents WHERE id = $1', [req.params.id]);
+        res.json({ "message": "deleted", changes: result.rowCount });
+    } catch (err) {
+        res.status(400).json({ "error": err.message });
+    }
 });
 
 // --- ENTITY ROUTES ---
-
-// GET All Departments
-app.get('/api/departments', (req, res) => {
-    db.all("SELECT name FROM departments ORDER BY name ASC", [], (err, rows) => {
-        if (err) return res.status(400).json({ "error": err.message });
-        res.json({ "message": "success", "data": rows.map(r => r.name) });
-    });
+// Departments
+app.get('/api/departments', async (req, res) => {
+    try {
+        const result = await db.query("SELECT name FROM departments ORDER BY name ASC");
+        res.json({ "message": "success", "data": result.rows.map(r => r.name) });
+    } catch (err) {
+        res.status(400).json({ "error": err.message });
+    }
 });
 
-// POST New Department
-app.post('/api/departments', (req, res) => {
+app.post('/api/departments', async (req, res) => {
     const { name } = req.body;
-    db.run("INSERT INTO departments (name) VALUES (?)", [name], function (err) {
-        if (err) return res.status(400).json({ "error": err.message });
+    try {
+        await db.query("INSERT INTO departments (name) VALUES ($1)", [name]);
         res.json({ "message": "success", "name": name });
-    });
+    } catch (err) {
+        res.status(400).json({ "error": err.message });
+    }
 });
 
-// GET All External Entities
-app.get('/api/external-entities', (req, res) => {
-    db.all("SELECT name FROM external_entities ORDER BY name ASC", [], (err, rows) => {
-        if (err) return res.status(400).json({ "error": err.message });
-        res.json({ "message": "success", "data": rows.map(r => r.name) });
-    });
+// External Entities
+app.get('/api/external-entities', async (req, res) => {
+    try {
+        const result = await db.query("SELECT name FROM external_entities ORDER BY name ASC");
+        res.json({ "message": "success", "data": result.rows.map(r => r.name) });
+    } catch (err) {
+        res.status(400).json({ "error": err.message });
+    }
 });
 
-// POST New External Entity
-app.post('/api/external-entities', (req, res) => {
+app.post('/api/external-entities', async (req, res) => {
     const { name } = req.body;
-    db.run("INSERT INTO external_entities (name) VALUES (?)", [name], function (err) {
-        if (err) return res.status(400).json({ "error": err.message });
+    try {
+        await db.query("INSERT INTO external_entities (name) VALUES ($1)", [name]);
         res.json({ "message": "success", "name": name });
-    });
+    } catch (err) {
+        res.status(400).json({ "error": err.message });
+    }
 });
 
 // --- USER MANAGEMENT ROUTES ---
 
-// GET All Users
-app.get('/api/users', (req, res) => {
-    db.all("SELECT username, role, name FROM users ORDER BY username ASC", [], (err, rows) => {
-        if (err) return res.status(400).json({ "error": err.message });
-        res.json({ "message": "success", "data": rows });
-    });
+app.get('/api/users', async (req, res) => {
+    try {
+        const result = await db.query("SELECT username, role, name FROM users ORDER BY username ASC");
+        res.json({ "message": "success", "data": result.rows });
+    } catch (err) {
+        res.status(400).json({ "error": err.message });
+    }
 });
 
-// UPDATE User Password
-app.put('/api/users/:username', (req, res) => {
+app.put('/api/users/:username', async (req, res) => {
     const { password } = req.body;
-    db.run(
-        'UPDATE users SET password = ? WHERE username = ?',
-        [password, req.params.username],
-        function (err) {
-            if (err) {
-                res.status(400).json({ "error": err.message });
-                return;
-            }
-            res.json({
-                "message": "success",
-                "changes": this.changes
-            });
-        }
-    );
+    try {
+        const result = await db.query('UPDATE users SET password = $1 WHERE username = $2', [password, req.params.username]);
+        res.json({ "message": "success", "changes": result.rowCount });
+    } catch (err) {
+        res.status(400).json({ "error": err.message });
+    }
 });
 
-// LOGIN
-app.post('/api/login', (req, res) => {
+app.post('/api/login', async (req, res) => {
     const { username, password } = req.body;
     console.log(`Login attempt for: ${username}`);
-    const sql = "SELECT * FROM users WHERE username = ? AND password = ?";
-    db.get(sql, [username, password], (err, row) => {
-        if (err) {
-            res.status(400).json({ "error": err.message });
-            return;
-        }
+    try {
+        const result = await db.query("SELECT * FROM users WHERE username = $1 AND password = $2", [username, password]);
+        const row = result.rows[0];
         if (row) {
             res.json({
                 "message": "success",
@@ -284,27 +257,23 @@ app.post('/api/login', (req, res) => {
         } else {
             res.status(401).json({ "message": "Invalid credentials" });
         }
-    });
+    } catch (err) {
+        res.status(400).json({ "error": err.message });
+    }
 });
 
 // --- CLIENT SERVING ---
-// Serve React Static Files
-// Assumes 'dist' is in the project root found at '../dist' relative to server/
 const distPath = path.join(__dirname, '../dist');
 if (fs.existsSync(distPath)) {
     app.use(express.static(distPath));
-
-    // Handle React Routing, return all requests to React app
     app.get('*', (req, res) => {
         res.sendFile(path.join(distPath, 'index.html'));
     });
 } else {
-    // Dev fallback text if no build
     app.get('/', (req, res) => {
         res.send('API Server Running. Run `npm run build` in root to generate frontend.');
     });
 }
-
 
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
