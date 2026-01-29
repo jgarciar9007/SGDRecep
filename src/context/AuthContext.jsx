@@ -3,7 +3,14 @@ import React, { createContext, useContext, useState, useCallback } from 'react';
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
-    const [user, setUser] = useState(null);
+    const [user, setUser] = useState(() => {
+        try {
+            const saved = localStorage.getItem('cndes_user');
+            return saved ? JSON.parse(saved) : null;
+        } catch (e) {
+            return null;
+        }
+    });
 
     const login = useCallback(async (username, password) => {
         try {
