@@ -112,7 +112,7 @@ const DocumentEntry = () => {
         setAttachments(prev => prev.filter((_, i) => i !== index));
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
 
         const docData = {
@@ -132,13 +132,15 @@ const DocumentEntry = () => {
                 onClose: () => navigate('/log')
             });
         } else {
-            addDocument(docData);
-            setAlertModal({
-                isOpen: true,
-                title: 'Éxito',
-                message: 'Documento registrado con éxito',
-                onClose: () => navigate('/log')
-            });
+            const success = await addDocument(docData);
+            if (success) {
+                setAlertModal({
+                    isOpen: true,
+                    title: 'Éxito',
+                    message: 'Documento registrado con éxito',
+                    onClose: () => navigate('/log')
+                });
+            }
         }
     };
 

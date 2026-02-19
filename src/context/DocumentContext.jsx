@@ -137,9 +137,18 @@ export const DocumentProvider = ({ children }) => {
     };
 
     const addDocument = async (doc) => {
+        let newId = doc.id;
+        if (!newId) {
+            const maxId = documents.reduce((max, d) => {
+                const num = parseInt(d.id, 10);
+                return !isNaN(num) && num > max ? num : max;
+            }, 0);
+            newId = String(maxId + 1).padStart(3, '0');
+        }
+
         const newDoc = {
             ...doc,
-            id: doc.id || String(documents.length + 1).padStart(3, '0')
+            id: newId
         };
 
         try {
@@ -152,13 +161,16 @@ export const DocumentProvider = ({ children }) => {
             if (response.ok) {
                 // Optimistic update or refetch
                 await fetchDocuments();
+                return true;
             } else {
                 console.error("Failed to save document");
                 alert("Error al guardar en base de datos local");
+                return false;
             }
         } catch (error) {
             console.error("Error saving document:", error);
             alert("Error de conexión con la base de datos");
+            return false;
         }
     };
 
